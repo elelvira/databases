@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cars & Services</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    table, th, td { border: 1px solid gray; border-collapse: collapse; padding: 8px; }
+    input, select { margin: 5px; }
+  </style>
+</head>
+<body>
+
+<h2>Create Car + Service + Mechanic</h2>
+<form id="carForm">
+  <input name="brand" placeholder="Brand" required>
+  <input name="carType" placeholder="Car Type" required><br>
+
+  <input name="serviceId" placeholder="Service ID" required>
+  <input name="problem" placeholder="Problem" required>
+  <input name="solution" placeholder="Solution" required>
+  <input name="serviceAt" type="date" required><br>
+
+  <input name="mechanicName" placeholder="Mechanic Name" required>
+  <input name="experienceYears" type="number" placeholder="Experience (years)" required><br>
+
+  <button type="submit">Create</button>
+</form>
+
+<hr>
+
+<h2>Cars Table</h2>
+<table id="carsTable">
+  <thead>
+  <tr>
+    <th>ID</th>
+    <th>Brand</th>
+    <th>Type</th>
+    <th>Service Problem</th>
+    <th>Mechanic</th>
+    <th>Date</th>
+    <th>Delete</th>
+  </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+  const API = '/zapocet1/cars/v1';
+
+  document.getElementById('carForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const form = e.target;
+    const mechanicRes = await fetch(`${API}/mechanics`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: form.mechanicName.value,
+        experienceYears: parseInt(form.experienceYears.value)
+      })
+    });
+    const mechanic = await mechanicRes.json();
+
+    await fetch(`${API}/cars`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        brand: form.brand.value,
+        carType: form.carType.value,
+        serviceRecords: [{
+          id: form.serviceId.value,
+          problem: form.problem.value,
+          solution: form.solution.value,
+          serviceAt: form.serviceAt.value,
+          mechanicId: mechanic.id
+        }]
+      })
+    });
+
+    form.reset();
+    loadCars();
+  });
+
+  async function loadCars() {
+    const res = await fetch(`${API}/cars`);
+    const cars = await res.json();
+    const table = document.querySelector('#carsTable tbody');
+    table.innerHTML = '';
+
+    cars.forEach(car => {
+      const row = document.createElement('tr');
+      const sr = car.serviceRecords?.[0]; // если есть сервис
+      row.innerHTML = `
+        <td>${car.id}</td>
+        <td>${car.brand}</td>
+        <td>${car.carType}</td>
+        <td>${car.problem ?? ''}</td>
+        <td>${car.mechanicName ?? ''}</td>
+        <td>${car.serviceAt ?? ''}</td>
+        <td><button onclick="deleteCar(${car.id})">Delete</button></td>
+    `;
+
+      table.appendChild(row);
+    });
+  }
+
+  async function deleteCar(id) {
+    await fetch(`${API}/cars/${id}`, { method: 'DELETE' });
+    loadCars();
+  }
+
+  loadCars();
+</script>
+</body>
+</html>

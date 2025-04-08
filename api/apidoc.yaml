@@ -1,0 +1,153 @@
+openapi: 3.0.0
+info:
+  title: Laureate API
+  version: "1.0.0"
+  description: API for managing laureates and prizes
+paths:
+  /laureates/{id}:
+    get:
+      tags:
+        - laureates
+      summary: 'Get laureate by ID'
+      operationId: showLaureate
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'ID of the laureate to return'
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'successful operation'
+          headers:
+            X-Rate-Limit:
+              description: 'calls per hour allowed by the user'
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: 'oops, not found'
+    put:
+      tags:
+        - laureates
+      summary: 'Update laureate by ID'
+      operationId: updateLaureate
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'ID of the laureate to update'
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: 'Laureate fields to update'
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                full_name:
+                  type: string
+                oragnization:
+                  type: string
+                sex:
+                  type: string
+                date_of_birth:
+                  type: string
+                date_of_death:
+                  type: string
+                country_name:
+                  type: string
+                prize_category:
+                  type: string
+                prize_year:
+                  type: string
+              type: object
+      responses:
+        '201':
+          description: 'Updated successfully'
+        '404':
+          description: 'Not found'
+        '400':
+          description: 'Bad request'
+    delete:
+      tags:
+        - laureates
+      summary: 'Delete laureate by ID'
+      operationId: deleteLaureate
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'ID of the laureate to delete'
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: 'Deleted successfully'
+        '404':
+          description: 'Not found'
+        '400':
+          description: 'Bad request'
+  /laureates:
+    post:
+      tags:
+        - laureates
+      summary: 'Add products'
+      operationId: storeLaureate
+      requestBody:
+        description: 'New product'
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Product'
+      responses:
+        '200':
+          description: 'successful operation'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+components:
+  schemas:
+    Product:
+      required:
+        - full_name
+        - sex
+        - date_of_birth
+        - country_name
+        - prize_year
+        - prize_category
+      properties:
+        full_name:
+          type: string
+        oragnization:
+          type: string
+        sex:
+          type: string
+        date_of_birth:
+          type: string
+        date_of_death:
+          type: string
+        country_name:
+          type: string
+        prize_year:
+          type: string
+        prize_category:
+          type: string
+      type: object
+tags:
+  -
+    name: laureates
+    description: laureates
